@@ -1,0 +1,54 @@
+body {
+    padding: 10px;
+}
+
+div.index-card{
+    width: 18em; 
+    height: 630px;
+}
+
+div.bid-card{
+    width: 18em;
+    height: 450px;
+}
+
+p.card-text{
+    font-size: 0.9em;   
+}
+
+.float-container {
+    border: 3px solid #fff;
+    padding: 20px;
+    border-radius: 5px;
+    border: 0.25em solid salmon;
+}
+
+.float-child {
+    width: 50%;
+    float: left;
+    padding: 20px;
+}  
+
+a:link { 
+    text-decoration: none; 
+} 
+
+p.bid{
+    font-size: 2rem;
+}
+
+img.card-img-top{
+    height:286px;
+    object-fit:contain;
+}
+
+@media only screen and (max-width: 768px){
+    div.index-card{
+        width:18em;
+        height:500px;}
+    
+    img.card-img-top{
+        height:200px;
+        object-fit:contain;}
+    }
+    

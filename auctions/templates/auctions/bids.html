@@ -1,0 +1,35 @@
+{% extends 'auctions/layout.html' %}
+
+
+{% block body %}
+<div class="container-fluid">
+    <h1> Bid List </h1>
+    <div class="row">
+    {% if bids %}
+        {% for item in bids %}
+        <div class="col-3">
+            <div class="card m-4 bid-card">
+                {% if item.listing.image_url %}
+                    <img class="card-img-top" src="{{ item.listing.image_url }}">
+                {% else %}
+                {% endif %}
+                <div class="card-body">
+                    <a class="card-title" href="{% url 'listing' item.listing.id %}">{{ item.listing.title }}</a>
+                    <div class="pt-1">
+                        You Bidded: {{ item.amount }}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">Bid time: {{ item.timestamp }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col">
+            <p>You haven't made any bids so far.</p>
+        </div>
+    {% endif %}
+    </div>
+</div>
+{% endblock %}

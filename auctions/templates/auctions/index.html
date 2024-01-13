@@ -1,0 +1,33 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+<div class="container-fluid">
+    <h2>Active Listings</h2>
+    <div class="row">
+        {% for listing in listings %}
+        <div class="col-lg-3 col-sm-6">
+            <div class="card mb-5 index-card">
+                {% if listing.image_url %}
+                    <img class="card-img-top" src="{{ listing.image_url }}">
+                {% else %}
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title"> {{ listing.title }} </h5>
+                    <p class="card-text">{{ listing.description }}</p>
+                </div>
+                <div class="card-footer bg-transparent border-bottom">Current Price: {{ listing.starting_bid }}
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a class="btn btn-primary" href="{% url 'listing' listing.id %}">Detail</a>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">{{ listing.created_at }}</small>
+                    <small class="text-muted float-right">{{ listing.owner }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

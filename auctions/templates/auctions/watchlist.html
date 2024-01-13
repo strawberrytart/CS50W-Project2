@@ -1,0 +1,43 @@
+{% extends 'auctions/layout.html' %}
+
+{% block body %}
+
+<div class="container-fluid">
+    <h1> Watch List </h1>
+    <div class="row">
+        {% if watchlist %}
+            {% for listing in watchlist %}
+            <div class="col-3">
+                <div class="card m-4 index-card">
+                    {% if listing.image_url %}
+                        <img class="card-img-top" src="{{ listing.image_url }}">
+                    {% else %}
+                    {% endif %}
+                    <div class="card-body">
+                        <a class="card-title" href="{% url 'listing' listing.id %}">{{ listing.title }}</a>
+                        <p class="card-text">{{ listing.description }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-bottom">Current Price: {{ listing.starting_bid }}
+                    </div>
+                    <div class="text-center p-2">
+                        <form method="POST" action ="{% url 'unwatch' listing.id %}">
+                            {% csrf_token %}
+                            <input class="btn btn-danger" type="submit" value="Unwatch">
+                        </form>
+                    </div>
+
+                    <div class="card-footer">
+                        <small class="text-muted">{{ listing.created_at }}</small>
+                        <small class="text-muted float-right">{{ listing.owner }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col">
+                <p> Watchlist is empty.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
