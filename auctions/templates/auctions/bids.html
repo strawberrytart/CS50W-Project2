@@ -7,8 +7,8 @@
     <div class="row">
     {% if bids %}
         {% for item in bids %}
-        <div class="col-3">
-            <div class="card m-4 bid-card">
+        <div class="col-lg-3 col-12">
+            <div class="card mb-4 bid-card">
                 {% if item.listing.image_url %}
                     <img class="card-img-top" src="{{ item.listing.image_url }}">
                 {% else %}

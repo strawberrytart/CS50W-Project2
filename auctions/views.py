@@ -13,7 +13,7 @@ from .models import User, Listing, Bid, Category
 
 def index(request):
     return render(request, "auctions/index.html",{
-        "listings": Listing.objects.filter(is_active=True),
+        "listings": Listing.objects.filter(is_active=True).order_by('-created_at'),
     })
 
 
@@ -250,7 +250,7 @@ def remove_from_watchlist(request, listing_id):
 @login_required(login_url='/login')
 def bids(request):
     user = User.objects.get(pk=request.user.pk)
-    bids = user.bids.all().order_by('-amount')
+    bids = user.bids.all().order_by('-timestamp')
     print(bids)
     return render(request,"auctions/bids.html",{
         "bids": bids,
@@ -311,7 +311,7 @@ def category(request):
 
 def category_detail(request, category_id):
     #listings = Listing.objects.filter(category=category_id)
-    listings = Category.objects.get(id=category_id).listings.all()
+    listings = Category.objects.get(id=category_id).listings.all().order_by('-created_at')
     print(listings)
 
     return render(request,"auctions/category_detail.html",{

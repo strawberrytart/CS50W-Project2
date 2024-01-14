@@ -8,18 +8,27 @@
     <div class="row">
         {% if listings %}
             {% for listing in listings %}
+            <div class="col-lg-3 col-sm-6">
                 <div class="card" style="width: 18rem">
-                    {% for listing.image_url %}
+                    {% if listing.image_url %}
                         <img class="card-img-top" src="{{ listing.image_url }}">
                     {% else %}
-                    {% endfor %}
+                    {% endif %}
                     <div class="card-body">
-                        <a class="card-title" href="{% url 'listing' listing.id %}">{{ listing.title }}</a>
-                        <p>{{ listing.description }}</p>
-                        <p>{{ listing.starting_bid }}</p>
-                        <p>{{ listing.owner }}</p>
+                        <h5 class="card-title"> {{ listing.title }} </h5>
+                        <p class="card-text">{{ listing.description }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-bottom">Current Price: {{ listing.starting_bid }}
+                    </div>
+                    <div class="card-footer bg-transparent border-0">
+                        <a class="btn btn-primary" href="{% url 'listing' listing.id %}">Detail</a>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">{{ listing.created_at }}</small>
+                        <small class="text-muted float-right">{{ listing.owner }}</small>
                     </div>
                 </div>
+            </div>
             {% endfor %}
         {% else %}
             <div class="col">

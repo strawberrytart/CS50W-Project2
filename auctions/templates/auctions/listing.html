@@ -4,7 +4,7 @@
 
 
 <div class="container">
-    <div class="row">
+    <div class="row mb-5">
         {% if user.is_authenticated %}
             <form action="{% url 'listing' listing.id %}" method = "post">
                 {% csrf_token %}

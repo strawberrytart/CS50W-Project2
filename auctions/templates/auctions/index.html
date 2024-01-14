@@ -6,7 +6,7 @@
     <h2>Active Listings</h2>
     <div class="row">
         {% for listing in listings %}
-        <div class="col-lg-3 col-sm-6">
+        <div class="col-lg-3 col-12">
             <div class="card mb-5 index-card">
                 {% if listing.image_url %}
                     <img class="card-img-top" src="{{ listing.image_url }}">
