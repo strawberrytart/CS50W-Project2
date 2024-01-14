@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from .forms import CreateListingForm, BidForm, CommentForm
@@ -19,7 +19,10 @@ def index(request):
 def listing(request,listing_id):
     
     #Get the listing (or model instance of Listing) whose id is 
-    listing = Listing.objects.get(id=listing_id)
+    try:
+        listing = Listing.objects.get(id=listing_id)
+    except Listing.DoesNotExist:
+        listing = None
     #Get a queryset of watchlist of listing, check whether the user exists in the queryset() 
     is_watched = listing.watchlist.filter(pk=request.user.pk).exists()
     #Get a queryset of all the bids of Listing and calculate the length of the queryset
@@ -40,7 +43,10 @@ def listing(request,listing_id):
     comment_form = CommentForm()
     #if a form is submitted
     if request.method == "POST":
-        listing = Listing.objects.get(id=listing_id)
+        try:
+            listing = Listing.objects.get(id=listing_id)
+        except Listing.DoesNotExist:
+            listing = None
         #if the bid form is submitted
         if 'bid' in request.POST:
             # Take in the data the user submitted and save it as form
@@ -271,7 +277,10 @@ def close_auction(request, listing_id):
     #Get the logged in user 
     user = request.user
     #Get the listing model instance that matches the id
-    listing = Listing.objects.get(id=listing_id)
+    try:
+        listing = Listing.objects.get(id=listing_id)
+    except Listing.DoesNotExist:
+        None
     #Get a queryset of all the bids of the listing, order it by the amount in descending order,
     #and get the highest bid which is the first item of the list
     highest_bid = Bid.objects.filter(listing=listing).order_by('-amount').first()
@@ -328,7 +337,7 @@ def category(request):
 
 def category_detail(request, category_id):
     #Get all the listings that belong to a category whose id matches the id, order it by creation date in descending order
-    listings = Category.objects.get(id=category_id).listings.all().order_by('-created_at')
+    listings = Category.objects.get(id=category_id).listings.filter(is_active='True').order_by('-created_at')
     return render(request,"auctions/category_detail.html",{
         "listings":listings,
 
