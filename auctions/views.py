@@ -6,24 +6,24 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from .forms import CreateListingForm, BidForm, CommentForm
 from django.db.models import Max
-from collections import defaultdict
-
 from .models import User, Listing, Bid, Category
 
 
 def index(request):
     return render(request, "auctions/index.html",{
+        #Get a queryset of Listings that is active and order them by creation date in descending order
         "listings": Listing.objects.filter(is_active=True).order_by('-created_at'),
     })
 
 
 def listing(request,listing_id):
-    #auction_closed =  False
-    #find the object related to id 
+    
+    #Get the listing (or model instance of Listing) whose id is 
     listing = Listing.objects.get(id=listing_id)
-    #check if listing is in user's watchlist
+    #Get a queryset of watchlist of listing, check whether the user exists in the queryset() 
     is_watched = listing.watchlist.filter(pk=request.user.pk).exists()
-    #check if listing has any bids at all 
+    #Get a queryset of all the bids of Listing and calculate the length of the queryset
+    #Checks if listing has any bids at all 
     bid_count = listing.bids.all().count()
     #if there is bid, show current maximum bid price
     if bid_count > 0:
@@ -52,7 +52,7 @@ def listing(request,listing_id):
 
                 #Check if there is any current bids
                 if listing.bids.all().count() > 0:
-                    print(f"Bidding on a listing that has {listing.bids.all().count()} bids")
+                    #print(f"Bidding on a listing that has {listing.bids.all().count()} bids")
                     #Get the largest current bid
                     current_bid = round(listing.bids.all().aggregate(Max('amount'))['amount__max'],2)
                     # check if amount is greater than current bid
@@ -79,12 +79,13 @@ def listing(request,listing_id):
 
                 #No current bids, no one has bid on this item yet
                 else:
-                    print(f"Bidding on a listing with 0 bids")
+                    #print(f"Bidding on a listing with 0 bids")
                     #check if amount is greater than starting_bid
                     if amount >= listing.starting_bid:
                         bid = form.save(commit=False)
                         bid.listing = listing
                         bid.bidder = request.user
+                        #Saves the form data into a new bid object without committing it to database yet, allowing for further modifications
                         bid.save()
                         listing.starting_bid = amount
                         listing.save()
@@ -133,9 +134,10 @@ def listing(request,listing_id):
     
     
     #create the bid form
-    
     bid_form = BidForm(initial={'amount':display_bid})
+    #set the minimum value of the bid form to the latest bid value
     bid_form.fields['amount'].widget.attrs['min'] = display_bid
+    #Gets a queryset of all comments that belongs to Listing and order by the time stamp in descending order
     comments = listing.comments.all().order_by('-timestamp')
        
     return render(request,"auctions/listing.html",{
@@ -152,7 +154,9 @@ def listing(request,listing_id):
 @login_required(login_url='login')
 def create(request):
     if request.method == 'POST': #if user submitted the form
+        # Take in the data the user submitted and save it as form
         form = CreateListingForm(request.POST)
+        #Check if form data is valid (server-side)
         if form.is_valid():
             #Saves the form data into a new 'Listing' object without committing it to database yet, allowing for further modifications
             listing = form.save(commit = False)
@@ -231,6 +235,7 @@ def watchlist(request):
 
     #use the reverse relation to get all the watchlist_listing from this user
     watchlist = user.watchlist_listings.all()
+    #get the length of the watchlist
     watchlist_count = user.watchlist_listings.all().count()
     return render(request,"auctions/watchlist.html",{
         "watchlist": watchlist,
@@ -239,32 +244,39 @@ def watchlist(request):
 
 @login_required(login_url='/login')
 def remove_from_watchlist(request, listing_id):
+    #Get the Listing whose id matches the id passed in the URL
     listing = get_object_or_404(Listing,pk=listing_id)
+    #set user variable to the user logged in
     user = request.user
-    
+    #check if the user is authenticated. 
     if user.is_authenticated:
+        #check if the user can be found in a queryset of user's watchlist 
         if user in listing.watchlist.all():
+            #if true, remove the user 
             listing.watchlist.remove(user)
     return HttpResponseRedirect(reverse("watchlist"))
 
 @login_required(login_url='/login')
 def bids(request):
+    #Get the logged in user object
     user = User.objects.get(pk=request.user.pk)
+    #Get all the bids of the user and order by the creation date
     bids = user.bids.all().order_by('-timestamp')
-    print(bids)
     return render(request,"auctions/bids.html",{
         "bids": bids,
     })
 
 @login_required(login_url='/login')
 def close_auction(request, listing_id):
+    #Get the logged in user 
     user = request.user
-
+    #Get the listing model instance that matches the id
     listing = Listing.objects.get(id=listing_id)
-
+    #Get a queryset of all the bids of the listing, order it by the amount in descending order,
+    #and get the highest bid which is the first item of the list
     highest_bid = Bid.objects.filter(listing=listing).order_by('-amount').first()
 
-    #if there any bid: 
+    #if there is any bid: 
     if highest_bid:
         winner= highest_bid.bidder
         print(f"The winner is {winner}")
@@ -285,18 +297,22 @@ def close_auction(request, listing_id):
 
 @login_required(login_url='/login')
 def comment(request,listing_id):
+    #when the user submits the form 
     if request.method == "POST":
+        #Get the listing that matches the id
         listing = Listing.objects.get(id=listing_id)
+        # Take in the data the user submitted and save it as form
         form = CommentForm(request.POST)
 
         if form.is_valid():
+            # Isolate the text from the 'cleaned' version of form data
             text = form.cleaned_data["text"]
-            print(text)
+            #Saves the form data into a new 'Comment' model object without committing it to database yet, allowing for further modifications
             comment = form.save(commit=False)
             comment.listing = listing
             comment.commenter = request.user
+            #save and hit the database
             comment.save()
-            print("Comment saved")
         
             return HttpResponseRedirect(reverse('listing', args=(listing.id,)))        
     else: #GET
@@ -304,16 +320,15 @@ def comment(request,listing_id):
         return HttpResponseRedirect(reverse('listing', args=(listing.id,)))
 
 def category(request):
+    #Get a queryset of all the categories
     categories = Category.objects.all()
     return render(request, "auctions/category.html",{
         'categories': categories,
     })
 
 def category_detail(request, category_id):
-    #listings = Listing.objects.filter(category=category_id)
+    #Get all the listings that belong to a category whose id matches the id, order it by creation date in descending order
     listings = Category.objects.get(id=category_id).listings.all().order_by('-created_at')
-    print(listings)
-
     return render(request,"auctions/category_detail.html",{
         "listings":listings,
 
